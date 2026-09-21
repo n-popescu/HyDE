@@ -86,7 +86,12 @@ if pkg_installed systemd && nvidia_detect && [ "$(bootctl status 2>/dev/null | a
     fi
 fi
 
-# pacman
+# package manager setup (pacman on Arch, dnf repos on Fedora/Asahi)
+
+if is_fedora; then
+    "${scrDir}/enable_repos_fedora.sh"
+    exit $?
+fi
 
 if [ -f /etc/pacman.conf ] && [ ! -f /etc/pacman.conf.hyde.bkp ]; then
     print_log -g "[PACMAN] " -b "modify :: " "adding extra spice to pacman..."

@@ -3,6 +3,7 @@
     description = " Customizable and lightweight notification-daemon"
 
 [[dunst.dependency]]
+    dnf    = [ "dunst" ]
     pacman = [ "dunst" ]
 
 [[dunst.files]]

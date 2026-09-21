@@ -130,6 +130,14 @@ export flg_ThemeInstall=$theme_install
 HYDE_LOG="$(date +'%y%m%d_%Hh%Mm%Ss')"
 export HYDE_LOG
 
+# TOML dependency key the transient core/extra manifests below are written
+# with; deez reads whichever one matches the package manager it resolves,
+# so this has to agree with the [[global.package_managers]] name in
+# dots-groups/core.toml and dots-groups/extra.toml.
+depKey="pacman"
+is_fedora && depKey="dnf"
+export depKey
+
 if [ $dry_run -eq 1 ]; then
 	print_log -n "[test-run] " -b "enabled :: " "Testing without executing"
 fi
@@ -192,8 +200,11 @@ EOF
 	#----------------#
 	echo ""
 
-	# Step 1: Check if any AUR helper is installed
-	if chk_list "aurhlpr" "${aurList[@]}"; then
+	# Step 1: Check if any AUR helper is installed (Fedora has no AUR; the
+	# helper prompts below are meaningless there, so skip straight past them)
+	if is_fedora; then
+		:
+	elif chk_list "aurhlpr" "${aurList[@]}"; then
 		# Step 2: Show detected helper and ask user to confirm
 		print_log -c "\nDetected AUR helper: "
 		print_log -sec "AUR" -stat "Found" "${aurhlpr}"
@@ -216,7 +227,7 @@ EOF
 	fi
 
 	# Step 3: If no helper chosen yet, show selection menu
-	if [[ -z "${getAur:-}" ]]; then
+	if ! is_fedora && [[ -z "${getAur:-}" ]]; then
 		print_log -c "\nAvailable AUR helpers :: "
 		for i in "${!aurList[@]}"; do
 			print_log -sec "$((i + 1))" " ${aurList[$i]} "
@@ -284,11 +295,10 @@ EOF
 		]
 
 		[[global.dependency]]
-		pacman = [
+		${depKey} = [
 	TOML
 
-# TODO: This is arch specific; A separate install script should be written
-	if nvidia_detect; then
+	if ! is_asahi && nvidia_detect; then
 		if [ "${flg_Nvidia}" -eq 1 ]; then
 			cat /usr/lib/modules/*/pkgbase 2>/dev/null | while read -r kernel; do
 				echo "\"${kernel}-headers\","
@@ -348,9 +358,9 @@ EOF
 		]
 
 		[[global.dependency]]
-		pacman = [
+		${depKey} = [
 	TOML
-	if nvidia_detect && [ "${flg_Nvidia}" -eq 1 ]; then
+	if ! is_asahi && nvidia_detect && [ "${flg_Nvidia}" -eq 1 ]; then
 		cat /usr/lib/modules/*/pkgbase 2>/dev/null | while read -r kernel; do
 			echo "\"${kernel}-headers\","
 		done >> "${core_toml}"
@@ -373,7 +383,7 @@ EOF
 		]
 
 		[[global.dependency]]
-		pacman = [
+		${depKey} = [
 	TOML
 	# starship is needed for both zsh and fish prompts
 	echo "\"starship\"," >> "${extra_toml}"

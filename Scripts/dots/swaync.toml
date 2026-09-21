@@ -2,6 +2,7 @@
 [swaync]
     description = " A simple notification daemon with a GTK panel for checking previous notifications like other DEs"
 [[swaync.dependency]]
+    dnf    = [ "swaync" ] # not in Fedora's main repos as of writing; verify COPR availability
     pacman = [ "swaync" ]
 
 [[swaync.files]]

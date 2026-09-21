@@ -2,6 +2,7 @@
     description = "A modern, hackable, featureful, OpenGL-based terminal emulator"
 
 [[kitty.dependency]]
+    dnf    = [ "kitty" ] # Dependency for kitty
     pacman = [ "kitty" ] # Dependency for kitty
 
 [[kitty.files]]

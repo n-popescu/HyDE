@@ -1,6 +1,7 @@
 [fish]
 
 [[fish.dependency]]
+dnf = ["fish", "starship", "fastfetch"]
 pacman = ["fish", "starship", "fastfetch"]
 
 [[fish.files]]

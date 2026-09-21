@@ -2,6 +2,7 @@
 pre_command = "echo 'Preserve lsd config'"
 
 [[lsd.dependency]]
+dnf = ["lsd"]
 pacman = ["lsd"]
 
 [[lsd.files]]

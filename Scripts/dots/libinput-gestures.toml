@@ -6,6 +6,9 @@ pre_command = "echo 'Preserve libinput-gestures config'"
 [[libinput_gestures.dependency]]
 yay = ["libinput-gestures"]
 paru = ["libinput-gestures"]
+# Fedora has no AUR and no official libinput-gestures package; install it
+# manually (pip install --user libinput-gestures, or clone the upstream repo)
+# before this dot's config is deployed.
 
 [[libinput_gestures.files]]
 action = "preserve"

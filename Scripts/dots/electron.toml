@@ -4,6 +4,9 @@
 
 [[electron-flags.dependency]]
     pacman = [ "electron" ]
+    # No standalone shared-runtime "electron" package on Fedora; Electron
+    # apps there bundle their own runtime, so this config has nothing to
+    # install against and is simply seeded for apps that do read it.
 
 [[electron-flags.files]]
     action      = "preserve"

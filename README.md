@@ -73,6 +73,8 @@ While installing HyDE alongside another [DE](https://wiki.archlinux.org/title/De
 
 For NixOS support there is a separate project being maintained @ [Hydenix](https://github.com/richen604/hydenix/tree/main)
 
+For Fedora / Fedora Asahi Remix (Apple Silicon), the install scripts have a `dnf`-based port — see [`FEDORA-ASAHI.md`](./FEDORA-ASAHI.md).
+
 > [!IMPORTANT]
 > The install script will auto-detect an NVIDIA card and install a matching DKMS driver path for your kernel.
 > Newer cards may use `nvidia-dkms` / `nvidia-open-dkms`, while legacy cards should be checked first against [`Scripts/nvidia-db/`](./Scripts/nvidia-db/).
