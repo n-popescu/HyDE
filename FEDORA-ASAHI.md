@@ -46,18 +46,32 @@ so Arch installs are unaffected.
 
 | Source | Used for |
 | --- | --- |
-| Fedora's own repos | Most base packages (kitty, dunst, rofi, firefox, pipewire, NetworkManager, sddm, qt5ct/qt6ct, kvantum, fastfetch, lsd, zsh/fish/starship, ...) |
+| Fedora's own repos | Most base packages (kitty, dunst, rofi, firefox, pipewire, NetworkManager, sddm, qt5ct/qt6ct, kvantum, fastfetch, lsd, zsh/fish, SwayNotificationCenter, ...) |
 | RPM Fusion | Codecs and a handful of non-free packages |
-| Hyprland-ecosystem COPR (`solopasha/hyprland` on x86_64, `lionheartp/Hyprland` on aarch64 — see below) | The Hyprland ecosystem itself: hyprland, hyprlock, hypridle, hyprpicker, hyprsunset, xdg-desktop-portal-hyprland, hyprpolkitagent, wlogout, and related tools |
+| Hyprland-ecosystem COPR (`solopasha/hyprland` on x86_64, `lionheartp/Hyprland` on aarch64 — see below) | The Hyprland ecosystem itself: hyprland, hyprlock, hypridle, hyprpicker, hyprsunset, xdg-desktop-portal-hyprland, hyprpolkitagent, wlogout, awww, cliphist, nwg-look, and related tools |
+| `atim/starship` COPR | `starship` — dropped from Fedora's own repos after Fedora 36, needed unconditionally by both shells |
 | Flathub (`flatpak`) | Apps without a good native path — VS Code, VSCodium, Spotify |
-| Manual install | A few AUR-only tools with no Fedora/COPR equivalent found yet (e.g. `libinput-gestures`) |
+| Manual install | Tools with no confirmed Fedora/COPR package (see below) |
 
-Packages marked `-- COPR` in `Scripts/dots/deps.toml` are expected to come
-from whichever COPR `Scripts/enable_repos_fedora.sh` enables (default
-`solopasha/hyprland`); a few (`awww`, `wl-clip-persist`, `nwg-look`,
-`nwg-displays`, `hyprquery`) are noted as unverified because their presence
-in that COPR fluctuates upstream — if `dnf install` can't find one, check the
-COPR's package list first, then fall back to building from source.
+`Scripts/enable_repos_fedora.sh` enables both COPRs (RPM Fusion too), then
+verifies `hyprland` and `starship` actually resolve before continuing —
+confirmed on real hardware to catch a COPR silently missing a given
+architecture rather than fail deep into the real install.
+
+**Not auto-installed**, confirmed absent from both the Hyprland-ecosystem
+COPR and Fedora's own repos on real hardware — installing every unresolved
+name in one `dnf install` call fails the *whole* batch (dnf, unlike
+pacman/apt, won't partially install the rest), so these were pulled out of
+`Scripts/dots/deps.toml`'s `dnf` array entirely rather than risk blocking
+everything else in it:
+
+| Package | Where to get it |
+| --- | --- |
+| `satty` | COPR (community, unverified): `mineiro/satty-rpms`, or `cargo install satty` |
+| `wl-clip-persist` | COPR (community, unverified): `leloubil/wl-clip-persist` |
+| `nwg-displays` | COPR (community, unverified), e.g. `aeiro/nwg-shell` — part of the nwg-shell family, several forks exist |
+| `hyprquery` | No known Fedora/COPR package; build from source: [HyDE-Project/hyprquery](https://github.com/HyDE-Project/hyprquery) |
+| `libinput-gestures` | Not packaged for Fedora at all; `pip install --user libinput-gestures` or clone upstream |
 
 ## aarch64 (Apple Silicon) compatibility
 

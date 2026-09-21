@@ -97,7 +97,7 @@ dnf = [
   "pipewire-alsa", # pipewire alsa client
   "pipewire-jack-audio-connection-kit", # pipewire jack client
   "pipewire-pulseaudio", # pipewire pulseaudio client
-  "gstreamer1-plugin-pipewire", # pipewire gstreamer client
+  "pipewire-gstreamer", # pipewire gstreamer client
   "wireplumber", # pipewire session manager
   "pavucontrol", # pulseaudio volume control
   "pamixer", # pulseaudio cli mixer
@@ -118,9 +118,9 @@ dnf = [
   "grim", # screenshot tool
   "hyprpicker", # color picker -- COPR
   "slurp", # region select for screenshot/screenshare
-  "satty", # Modern Screenshot Annotation -- COPR
   "cliphist", # clipboard manager -- COPR
-  "wl-clip-persist", # Keep Wayland clipboard even after programs close -- COPR
+  # satty and wl-clip-persist are NOT in the Hyprland-ecosystem COPR (confirmed
+  # on real hardware); see the "not auto-installed" note below the array.
   # Dependencies
   "hyprpolkitagent", # authentication agent -- COPR
   "xdg-desktop-portal-hyprland", # xdg desktop portal for hyprland -- COPR
@@ -147,9 +147,25 @@ dnf = [
   "firefox", # browser
   "ark", # kde file archiver
   "unzip", # extracting zip files
-  "nwg-displays", # monitor management utility -- COPR
   "fzf", # Command-line fuzzy finder
   "wlogout", # logout menu -- COPR
-  "hyprquery", # CLI utility for querying hypr-related configuration -- COPR, verify availability
+  # nwg-displays and hyprquery are NOT in the Hyprland-ecosystem COPR either
+  # (confirmed on real hardware); see the "not auto-installed" note below.
 
 ]
+# Not auto-installed on Fedora: confirmed absent from both the Hyprland-
+# ecosystem COPR and Fedora's own repos on real hardware. Installing every
+# unresolved package name in one `dnf install` call fails the WHOLE batch
+# (dnf, unlike pacman/apt, won't partially install the rest), so these are
+# left out of the dnf array above rather than risk blocking everything else
+# in it. Install manually if you want them:
+#   satty              -- COPR (community, unverified): mineiro/satty-rpms
+#                          -- https://github.com/mineiro/satty-rpms
+#                          or `cargo install satty`
+#   wl-clip-persist     -- COPR (community, unverified): leloubil/wl-clip-persist
+#   nwg-displays        -- COPR (community, unverified), e.g. aeiro/nwg-shell
+#                          (part of the nwg-shell family; several forks exist)
+#   hyprquery           -- no known Fedora/COPR package; build from source:
+#                          https://github.com/HyDE-Project/hyprquery (needs a
+#                          C++23 compiler, CMake 3.19+, spdlog, nlohmann_json,
+#                          CLI11 -- hyprlang itself is fetched by the build)

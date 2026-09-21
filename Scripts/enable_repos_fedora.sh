@@ -7,9 +7,11 @@
 #
 # Arch's install_pre.sh reaches for pacman.conf and Chaotic-AUR here; Fedora
 # has no AUR, so the equivalent is RPM Fusion (codecs, a handful of non-free
-# bits) and a Hyprland-ecosystem COPR, which is where the packages in
-# Scripts/dots/*.toml's `dnf = [...]` arrays marked "-- COPR" come from. Both
-# are idempotent: re-running this after they're already enabled is a no-op.
+# bits), a Hyprland-ecosystem COPR (packages in Scripts/dots/*.toml's
+# `dnf = [...]` arrays marked "-- COPR"), and the atim/starship COPR (Fedora
+# dropped starship from its own repos after Fedora 36 -- it's needed
+# unconditionally, both shells depend on it). All of this is idempotent:
+# re-running after it's already enabled is a no-op.
 #
 # The Fedora Hyprland-on-COPR landscape churns and forks often. Confirmed on
 # real Fedora Asahi Remix hardware: solopasha/hyprland (the longest-standing
@@ -60,37 +62,58 @@ else
         "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_ver}.noarch.rpm"
 fi
 
+# Enables $1 as a COPR project (project id, e.g. "owner/project") and prints
+# its own status via return code rather than letting `set -e` (inherited
+# from global_fn.sh) abort the script on a bare `dnf copr enable` failure --
+# e.g. a chroot this COPR doesn't build at all for this architecture -- which
+# would otherwise skip the actionable warning in verify_copr_pkg below.
+enable_copr() {
+    local copr="$1"
+    if dnf copr list 2>/dev/null | grep -qi "${copr}"; then
+        print_log -y "[copr] " -b "skip :: " "${copr} already enabled"
+        return 0
+    fi
+    print_log -g "[copr] " -b "enable :: " "${copr}"
+    run sudo dnf copr enable -y "${copr}"
+}
+
+# Checks that $2 (a package expected from COPR $3) actually resolves, given
+# $1 = "0" if that COPR's enable_copr call above already failed. On failure,
+# prints how to override via $4 (an env var name) instead of either a bare
+# "no package" error deep into the real install, or silence.
+verify_copr_pkg() {
+    local enabled="$1" checkPkg="$2" copr="$3" overrideVar="$4"
+    [ "${flg_DryRun}" -eq 1 ] && return 0
+    if [ "${enabled}" != "0" ] || ! dnf --quiet repoquery "${checkPkg}" &>/dev/null; then
+        print_log -err "[copr] " -crit "WARNING" "'${checkPkg}' is not available from ${copr} on this system ($(uname -m))"
+        print_log -warn "copr" "Set ${overrideVar} to a COPR with confirmed builds for your architecture and re-run this script, e.g.:"
+        print_log -warn "copr" "  ${overrideVar}=<owner>/<project> ./Scripts/enable_repos_fedora.sh"
+        print_log -warn "copr" "Check https://copr.fedorainfracloud.org/coprs/ for whichever fork currently builds your architecture -- this changes over time."
+        return 1
+    fi
+    return 0
+}
+
 hyprlandCoprDefault="solopasha/hyprland"
 [ "$(uname -m)" = "aarch64" ] && hyprlandCoprDefault="lionheartp/Hyprland"
 hyprlandCopr="${HYDE_FEDORA_HYPRLAND_COPR:-${hyprlandCoprDefault}}"
+starshipCopr="${HYDE_FEDORA_STARSHIP_COPR:-atim/starship}"
 
-coprEnableFailed=0
-if dnf copr list 2>/dev/null | grep -qi "${hyprlandCopr}"; then
-    print_log -y "[copr] " -b "skip :: " "${hyprlandCopr} already enabled"
-else
-    print_log -g "[copr] " -b "enable :: " "${hyprlandCopr} (Hyprland ecosystem builds for Fedora)"
-    # A chroot this COPR doesn't build (e.g. no aarch64 build at all) makes
-    # `dnf copr enable` exit non-zero; under this script's `set -e` (inherited
-    # from global_fn.sh) that would otherwise abort here and skip straight
-    # past the actionable warning below, leaving only the raw dnf error.
-    if ! run sudo dnf copr enable -y "${hyprlandCopr}"; then
-        coprEnableFailed=1
-    fi
-fi
+hyprlandEnabled=0
+enable_copr "${hyprlandCopr}" || hyprlandEnabled=1
+
+starshipEnabled=0
+enable_copr "${starshipCopr}" || starshipEnabled=1
 
 print_log -g "[dnf] " -b "refresh :: " "package metadata"
 run sudo dnf makecache || true
 
-# The COPR landscape above is not reliably verified for every architecture;
-# catch it here with an actionable message instead of letting `hyprland` fail
-# to resolve deep into the install (or, if the enable itself failed above,
-# instead of stopping on a bare dnf error with no next step).
-if [ "${flg_DryRun}" -ne 1 ] && { [ "${coprEnableFailed}" -eq 1 ] || ! dnf --quiet repoquery hyprland &>/dev/null; }; then
-    print_log -err "[copr] " -crit "WARNING" "'hyprland' is not available from ${hyprlandCopr} on this system ($(uname -m))"
-    print_log -warn "copr" "Set HYDE_FEDORA_HYPRLAND_COPR to a COPR with confirmed builds for your architecture and re-run this script, e.g.:"
-    print_log -warn "copr" "  HYDE_FEDORA_HYPRLAND_COPR=lionheartp/Hyprland ./Scripts/enable_repos_fedora.sh"
-    print_log -warn "copr" "Check https://copr.fedorainfracloud.org/coprs/ for whichever fork currently builds your architecture -- this changes over time."
+reposFailed=0
+verify_copr_pkg "${hyprlandEnabled}" hyprland "${hyprlandCopr}" HYDE_FEDORA_HYPRLAND_COPR || reposFailed=1
+verify_copr_pkg "${starshipEnabled}" starship "${starshipCopr}" HYDE_FEDORA_STARSHIP_COPR || reposFailed=1
+
+if [ "${reposFailed}" -eq 1 ]; then
     exit 1
 fi
 
-print_log -g "[repos] " -b "complete :: " "RPM Fusion and ${hyprlandCopr} COPR ready"
+print_log -g "[repos] " -b "complete :: " "RPM Fusion, ${hyprlandCopr}, and ${starshipCopr} COPRs ready"
