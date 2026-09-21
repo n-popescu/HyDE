@@ -82,17 +82,17 @@ paru = [
 ]
 # Fedora / Fedora Asahi Remix mapping of the pacman list above. Fedora has no
 # AUR, so the Hyprland-ecosystem packages (marked COPR below) come from
-# whichever COPR Scripts/enable_repos_fedora.sh enables (default
-# solopasha/hyprland, override with HYDE_FEDORA_HYPRLAND_COPR) instead of the
-# yay/paru arrays above. Names were mapped from the Arch side and are
-# best-effort; aarch64 (Asahi) coverage of that COPR specifically is not
-# guaranteed — see FEDORA-ASAHI.md's "aarch64 compatibility" section.
+# whichever COPR Scripts/enable_repos_fedora.sh enables (solopasha/hyprland
+# on x86_64, lionheartp/Hyprland on aarch64 -- solopasha's has no aarch64
+# chroot at all; override either with HYDE_FEDORA_HYPRLAND_COPR) instead of
+# the yay/paru arrays above. Names were mapped from the Arch side and are
+# best-effort — see FEDORA-ASAHI.md's "aarch64 compatibility" section.
 dnf = [
   # System
   "lua", # for lua runtime
   "luarocks", # Core scripts lib
   "gobject-introspection-devel", # headers and pkg-config data the lgi rock is built against
-  "uwsm", # A standalone Wayland session manager (COPR fallback: solopasha/hyprland)
+  "uwsm", # A standalone Wayland session manager (COPR fallback if not in Fedora's own repos)
   "pipewire", # audio/video server
   "pipewire-alsa", # pipewire alsa client
   "pipewire-jack-audio-connection-kit", # pipewire jack client
@@ -113,7 +113,7 @@ dnf = [
   "qt5-qtquickcontrols", # for sddm theme ui elements
   "qt5-qtquickcontrols2", # for sddm theme ui elements
   "qt5-qtgraphicaleffects", # for sddm theme effects
-  # Window Manager (COPR: solopasha/hyprland unless noted)
+  # Window Manager (from the Hyprland-ecosystem COPR unless noted)
   "awww", # wallpaper -- COPR; if unavailable, `cargo install awww`
   "grim", # screenshot tool
   "hyprpicker", # color picker -- COPR

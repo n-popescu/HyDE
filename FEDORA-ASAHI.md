@@ -24,10 +24,12 @@ something is wrong or missing, please open an issue or a PR.
   `pacman.conf` / Chaotic-AUR.
 - `Scripts/enable_repos_fedora.sh` is the Fedora equivalent of
   `Scripts/chaotic_aur.sh`: it enables [RPM Fusion](https://rpmfusion.org/)
-  (free + nonfree) and the
-  [`solopasha/hyprland`](https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/)
-  COPR, which packages most of the Hyprland ecosystem for Fedora, then
-  refreshes `dnf`'s metadata cache. It's idempotent — safe to re-run.
+  (free + nonfree) and a COPR that packages most of the Hyprland ecosystem
+  for Fedora — `solopasha/hyprland` on x86_64,
+  [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland/)
+  on aarch64 (see the aarch64 section below for why they differ), override
+  with `HYDE_FEDORA_HYPRLAND_COPR` — then refreshes `dnf`'s metadata cache.
+  It's idempotent — safe to re-run.
 - The per-app manifests under `Scripts/dots/*.toml` and the aggregate
   `Scripts/dots/deps.toml` now carry a `dnf = [...]` array alongside the
   existing `pacman = [...]` one, wherever Fedora has an equivalent package.
@@ -46,7 +48,7 @@ so Arch installs are unaffected.
 | --- | --- |
 | Fedora's own repos | Most base packages (kitty, dunst, rofi, firefox, pipewire, NetworkManager, sddm, qt5ct/qt6ct, kvantum, fastfetch, lsd, zsh/fish/starship, ...) |
 | RPM Fusion | Codecs and a handful of non-free packages |
-| `solopasha/hyprland` COPR | The Hyprland ecosystem itself: hyprland, hyprlock, hypridle, hyprpicker, hyprsunset, xdg-desktop-portal-hyprland, hyprpolkitagent, wlogout, and related tools |
+| Hyprland-ecosystem COPR (`solopasha/hyprland` on x86_64, `lionheartp/Hyprland` on aarch64 — see below) | The Hyprland ecosystem itself: hyprland, hyprlock, hypridle, hyprpicker, hyprsunset, xdg-desktop-portal-hyprland, hyprpolkitagent, wlogout, and related tools |
 | Flathub (`flatpak`) | Apps without a good native path — VS Code, VSCodium, Spotify |
 | Manual install | A few AUR-only tools with no Fedora/COPR equivalent found yet (e.g. `libinput-gestures`) |
 
@@ -71,20 +73,24 @@ silently.
 - **Flathub** (`com.visualstudio.code`, `com.vscodium.codium`,
   `com.spotify.Client`): all three publish aarch64 builds on Flathub; Flatpak
   installs the matching architecture automatically.
-- **The Hyprland-ecosystem COPR**: this is the actual risk. The Fedora
-  Hyprland-on-COPR scene forks and churns constantly, and which fork
-  currently builds aarch64 changes over time — `solopasha/hyprland` (this
-  port's default) has not been confirmed to build aarch64 at all;
-  `lionheartp/Hyprland` claimed aarch64 + x86_64 coverage for Fedora 43/44 at
-  the time of writing, but community repos like this come and go. Rather
-  than hardcode a specific fork as "the" answer, `enable_repos_fedora.sh`
-  reads `HYDE_FEDORA_HYPRLAND_COPR` (defaulting to `solopasha/hyprland`) and,
-  on aarch64, runs a `dnf repoquery hyprland` check after enabling it —
-  if `hyprland` doesn't resolve, it prints how to point at a different COPR
-  instead of letting the install fail later with a confusing "no package"
-  error. If you hit this, check
+- **The Hyprland-ecosystem COPR**: this is the actual risk, and it's a
+  confirmed one, not just a theoretical one. The Fedora Hyprland-on-COPR
+  scene forks and churns constantly. `solopasha/hyprland` — the
+  longest-standing one, and this port's default on x86_64 — has **no
+  aarch64 chroot at all**: `dnf copr enable` on real Fedora Asahi Remix
+  hardware fails immediately with `chroot not found in the given project
+  ... available chroots: fedora-rawhide-x86_64`. On aarch64,
+  `enable_repos_fedora.sh` therefore defaults to `lionheartp/Hyprland`
+  instead, a fork reported to build both aarch64 and x86_64 for Fedora 44 —
+  but community COPRs like this come and go, so treat that as "the current
+  best guess," not a permanent answer. The script reads
+  `HYDE_FEDORA_HYPRLAND_COPR` to override either default, and now exits
+  with an actionable message (rather than a bare dnf error, or silently
+  continuing into a confusing failure later) if `hyprland` still can't be
+  resolved after enabling it. If you hit this, check
   <https://copr.fedorainfracloud.org/coprs/> for whichever fork currently
-  builds aarch64 and re-run with `HYDE_FEDORA_HYPRLAND_COPR=<owner>/<project>`.
+  builds your architecture and re-run with
+  `HYDE_FEDORA_HYPRLAND_COPR=<owner>/<project> ./Scripts/enable_repos_fedora.sh`.
 - **Manual-install items** (`libinput-gestures`): it's pure Python/shell, so
   it runs fine on aarch64; it's just not packaged for Fedora at all,
   independent of architecture.
