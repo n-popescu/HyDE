@@ -91,6 +91,15 @@ dnf = [
   # System
   "lua", # for lua runtime
   "luarocks", # Core scripts lib
+  # Fedora splits headers/toolchain out of the runtime packages Arch bundles
+  # them into (plain `lua` and `openssl` there ship headers, and base-devel
+  # covers gcc/make); the Lua bootstrap rocks in lua_env.json compile native
+  # extensions against these, so they're needed explicitly here or luarocks
+  # fails to build luasec/luasocket/luafilesystem with a missing-header error.
+  "gcc",
+  "make",
+  "lua-devel", # Lua C headers the bootstrap rocks build against
+  "openssl-devel", # OpenSSL headers luasec's C binding needs
   "gobject-introspection-devel", # headers and pkg-config data the lgi rock is built against
   "uwsm", # A standalone Wayland session manager (COPR fallback if not in Fedora's own repos)
   "pipewire", # audio/video server
