@@ -11,6 +11,13 @@ if ! source "${scrDir}/global_fn.sh"; then
     exit 1
 fi
 
+# Fedora has no AUR concept; the equivalent (RPM Fusion + the
+# solopasha/hyprland COPR) is set up by enable_repos_fedora.sh instead.
+if is_fedora; then
+    "${scrDir}/enable_repos_fedora.sh"
+    exit $?
+fi
+
 # shellcheck disable=SC2154
 if chk_list "aurhlpr" "${aurList[@]}"; then
     if aur_health_check "${aurhlpr}"; then

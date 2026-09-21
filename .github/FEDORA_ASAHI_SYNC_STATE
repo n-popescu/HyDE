@@ -1,0 +1,5 @@
+# Tracks the last commit on `master` that the Fedora/Asahi sync routine has
+# reviewed for changes needing a Fedora counterpart (see FEDORA-ASAHI.md).
+# Updated by that routine after each sync pass; do not hand-edit unless
+# you're resetting the baseline on purpose.
+aceb94ee1a6010d9967403e6b7137d6376794e6e

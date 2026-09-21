@@ -4,6 +4,8 @@ description = "Open source version of Visual Studio Code configuration"
 
 [[code-oss.dependency]]
 pacman = ["code"]
+# No Fedora "Code - OSS" package exists (Arch's "code" is a community OSS
+# build); use the vscode/vscodium sections below via flatpak instead.
 
 [[code-oss.files]]
 source_root = "Configs/.config/Code - OSS/User"
@@ -21,6 +23,7 @@ description = "Visual Studio Code configuration"
 action = "preserve"
 yay = ["visual-studio-code-bin"]
 paru = ["visual-studio-code-bin"]
+flatpak = ["com.visualstudio.code"] # Fedora/Asahi: no AUR, install via Flathub instead
 
 [[vscode.files]]
 source_root = "Configs/.config/Code/User"
@@ -32,6 +35,7 @@ description = "Code Community open-source release."
 action = "preserve"
 yay = ["vscodium-bin"]
 paru = ["vscodium-bin"]
+flatpak = ["com.vscodium.codium"] # Fedora/Asahi: no AUR, install via Flathub instead
 
 [[vscodium.files]]
 source_root = "Configs/.config/VSCodium/User"

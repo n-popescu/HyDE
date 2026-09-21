@@ -3,6 +3,7 @@
 pre_command = "echo 'Preserve rofi config'"
 
 [[rofi.dependency]]
+dnf = ["rofi"] # Fedora's rofi has upstream Wayland support built in
 pacman = ["rofi"]
 
 [[rofi.files]]

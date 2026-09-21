@@ -24,11 +24,52 @@ export shlList
 pkg_installed() {
     local PkgIn=$1
 
-    if pacman -Q "${PkgIn}" &>/dev/null; then
-        return 0
+    if [ -x "${pacmanCmd}" ]; then
+        if "${pacmanCmd}" query "${PkgIn}" &>/dev/null; then
+            return 0
+        else
+            return 1
+        fi
+    elif command -v pacman &>/dev/null; then
+        if pacman -Q "${PkgIn}" &>/dev/null; then
+            return 0
+        else
+            return 1
+        fi
     else
         return 1
     fi
+}
+
+# Reads a single field from /etc/os-release without sourcing it (the file is
+# untrusted input on a machine we do not control).
+os_release_field() {
+    local field="$1"
+    [ -f /etc/os-release ] || return 1
+    awk -F= -v f="${field}" '$1 == f {gsub(/"/, "", $2); print $2; found=1} END{exit !found}' /etc/os-release
+}
+
+distro_id() {
+    os_release_field ID
+}
+
+is_fedora() {
+    local id id_like
+    id="$(distro_id)"
+    id_like="$(os_release_field ID_LIKE)"
+    [ "${id}" = "fedora" ] || [[ " ${id_like} " == *" fedora "* ]]
+}
+
+# Fedora Asahi Remix (Fedora for Apple Silicon / Asahi Linux). It reports
+# ID=fedora with VARIANT_ID=asahi; the arch/firmware checks are a fallback for
+# spins that drop that field.
+is_asahi() {
+    local variant_id
+    is_fedora || return 1
+    variant_id="$(os_release_field VARIANT_ID)"
+    [ "${variant_id}" = "asahi" ] && return 0
+    [ "$(uname -m)" = "aarch64" ] && [ -d /usr/lib/firmware/apple ] && return 0
+    return 1
 }
 
 chk_list() {
@@ -124,6 +165,14 @@ aur_available() {
 }
 
 nvidia_detect() {
+    # Apple Silicon has no discrete GPU slot; skip the lspci probe entirely so
+    # a missing pciutils package on a fresh Asahi install can't fail this out.
+    if is_asahi; then
+        if [ "${1}" == "--verbose" ] || [ "${1}" == "--drivers" ]; then
+            return 0
+        fi
+        return 1
+    fi
     readarray -t dGPU < <(lspci -k | grep -E "(VGA|3D)" | awk -F ': ' '{print $NF}')
     if [ "${1}" == "--verbose" ]; then
         for indx in "${!dGPU[@]}"; do
