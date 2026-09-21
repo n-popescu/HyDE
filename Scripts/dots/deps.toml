@@ -91,11 +91,18 @@ dnf = [
   # System
   "lua", # for lua runtime
   "luarocks", # Core scripts lib
-  # Fedora splits headers/toolchain out of the runtime packages Arch bundles
-  # them into (plain `lua` and `openssl` there ship headers, and base-devel
-  # covers gcc/make); the Lua bootstrap rocks in lua_env.json compile native
-  # extensions against these, so they're needed explicitly here or luarocks
-  # fails to build luasec/luasocket/luafilesystem with a missing-header error.
+  # Unlike Arch (no runtime/headers split -- plain `lua`/`openssl` there ship
+  # headers, and base-devel covers the toolchain), Fedora always splits
+  # headers into a separate -devel package, for every library, with no single
+  # meta-package that covers all of them the way base-devel does. The Lua
+  # bootstrap rocks in lua_env.json compile native extensions and need both
+  # a toolchain and these specific headers, or luarocks fails with a
+  # missing-header error. Not using the `@development-tools` dnf group here:
+  # it's the closer base-devel analog (gcc, make, autoconf, ...) and worth
+  # running by hand (`sudo dnf group install "Development Tools"`) if you'll
+  # be building other things from source, but a group id isn't a normal
+  # package and this array's entries are checked one by one, so plain
+  # package names stay the safer bet for the automated install.
   "gcc",
   "make",
   "lua-devel", # Lua C headers the bootstrap rocks build against

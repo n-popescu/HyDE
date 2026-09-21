@@ -135,6 +135,19 @@ The flow is otherwise identical to the Arch instructions in the main
 [README](./README.md#installation): `-p` for pre-install only, `-r` to
 restore configs, `-irs` for a full install, etc.
 
+There's no single Fedora equivalent of Arch's `base-devel` group that also
+covers headers -- Fedora always splits headers into a `-devel` package per
+library, with no meta-package that bundles them all the way `base-devel`
+does on Arch. `Scripts/dots/deps.toml` declares the exact toolchain/headers
+this install actually needs (`gcc`, `make`, `lua-devel`, `openssl-devel`,
+...) so you shouldn't need anything extra for HyDE itself. If you expect to
+build other things from source later (e.g. one of the manual-install tools
+below), it's worth running the closer toolchain analog once up front:
+
+```shell
+sudo dnf group install "Development Tools"
+```
+
 ## Keeping this port in sync
 
 Fedora/Asahi support here is derived from the upstream Arch scripts and
