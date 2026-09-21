@@ -81,10 +81,12 @@ paru = [
 
 ]
 # Fedora / Fedora Asahi Remix mapping of the pacman list above. Fedora has no
-# AUR, so the Hyprland-ecosystem packages (marked COPR below) come from the
-# solopasha/hyprland COPR that Scripts/enable_repos_fedora.sh enables instead
-# of the yay/paru arrays above. Names were mapped from the Arch side and are
-# best-effort — see FEDORA-ASAHI.md for how to report a wrong one.
+# AUR, so the Hyprland-ecosystem packages (marked COPR below) come from
+# whichever COPR Scripts/enable_repos_fedora.sh enables (default
+# solopasha/hyprland, override with HYDE_FEDORA_HYPRLAND_COPR) instead of the
+# yay/paru arrays above. Names were mapped from the Arch side and are
+# best-effort; aarch64 (Asahi) coverage of that COPR specifically is not
+# guaranteed — see FEDORA-ASAHI.md's "aarch64 compatibility" section.
 dnf = [
   # System
   "lua", # for lua runtime

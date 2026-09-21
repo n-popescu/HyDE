@@ -51,10 +51,43 @@ so Arch installs are unaffected.
 | Manual install | A few AUR-only tools with no Fedora/COPR equivalent found yet (e.g. `libinput-gestures`) |
 
 Packages marked `-- COPR` in `Scripts/dots/deps.toml` are expected to come
-from `solopasha/hyprland`; a few (`awww`, `wl-clip-persist`, `nwg-look`,
+from whichever COPR `Scripts/enable_repos_fedora.sh` enables (default
+`solopasha/hyprland`); a few (`awww`, `wl-clip-persist`, `nwg-look`,
 `nwg-displays`, `hyprquery`) are noted as unverified because their presence
 in that COPR fluctuates upstream — if `dnf install` can't find one, check the
 COPR's package list first, then fall back to building from source.
+
+## aarch64 (Apple Silicon) compatibility
+
+Short answer: most of it, confirmed; the Hyprland-ecosystem COPR is the one
+real open question, and the installer now checks for it rather than failing
+silently.
+
+- **Fedora's own repos and RPM Fusion**: aarch64 is a primary Fedora
+  architecture and RPM Fusion builds for it too, so everything sourced from
+  those two rows of the table above (the large majority of the dependency
+  list) is aarch64-native as a matter of course — no per-package check
+  needed.
+- **Flathub** (`com.visualstudio.code`, `com.vscodium.codium`,
+  `com.spotify.Client`): all three publish aarch64 builds on Flathub; Flatpak
+  installs the matching architecture automatically.
+- **The Hyprland-ecosystem COPR**: this is the actual risk. The Fedora
+  Hyprland-on-COPR scene forks and churns constantly, and which fork
+  currently builds aarch64 changes over time — `solopasha/hyprland` (this
+  port's default) has not been confirmed to build aarch64 at all;
+  `lionheartp/Hyprland` claimed aarch64 + x86_64 coverage for Fedora 43/44 at
+  the time of writing, but community repos like this come and go. Rather
+  than hardcode a specific fork as "the" answer, `enable_repos_fedora.sh`
+  reads `HYDE_FEDORA_HYPRLAND_COPR` (defaulting to `solopasha/hyprland`) and,
+  on aarch64, runs a `dnf repoquery hyprland` check after enabling it —
+  if `hyprland` doesn't resolve, it prints how to point at a different COPR
+  instead of letting the install fail later with a confusing "no package"
+  error. If you hit this, check
+  <https://copr.fedorainfracloud.org/coprs/> for whichever fork currently
+  builds aarch64 and re-run with `HYDE_FEDORA_HYPRLAND_COPR=<owner>/<project>`.
+- **Manual-install items** (`libinput-gestures`): it's pure Python/shell, so
+  it runs fine on aarch64; it's just not packaged for Fedora at all,
+  independent of architecture.
 
 ## Fedora Asahi Remix specifics
 
